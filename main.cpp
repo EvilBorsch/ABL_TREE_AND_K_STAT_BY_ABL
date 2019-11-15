@@ -11,8 +11,8 @@ private:
         int num_of_childs=0;
         node(T data){
             key=data;
-
         }
+
 
     };
 
@@ -43,14 +43,21 @@ private:
 
     void balance(node*& p){
 
-        fixheight(p);
 
+
+        fixheight(p);
+        if( bfactor(p)==2 )
+        {
+            if( bfactor(p->right) < 0 )
+                rotateright(p->right);
+             rotateleft(p);
+        }
         if( bfactor(p)==-2 )
         {
-            //if( bfactor(p->left) > 0  )
-            //p->left = rotateleft(p->left);
+            if( bfactor(p->left) > 0  )
+                rotateleft(p->left);
             rotateright(p);
-        } //
+        }
 
     }
 
@@ -74,15 +81,11 @@ private:
         if (nod== nullptr)
             return;
         req_print(nod->left);
-        std::cout<< nod->key;
+        std::cout<< nod->key << " ";
         req_print(nod->right);
     }
 
-
-
-
-public:
-    void rotateright(node*& p) // правый поворот вокруг p
+    void rotateright(node*& p)
     {
 
         node* q = p->left;
@@ -100,16 +103,93 @@ public:
 
         p=q;
         p->num_of_childs=p_num_childs;
-        p->right->num_of_childs=B_num+C_num+2;
-        p->left->num_of_childs=A_num;
-
+        if (p->right!= nullptr) p->right->num_of_childs=q_num_childs-1;
+        if (p->left!= nullptr) p->left->num_of_childs=A_num;
         if (p->right->right!= nullptr)    p->right->right->num_of_childs=C_num;
         if (p->right->left!= nullptr)     p->right->left->num_of_childs=B_num;
+
+    }
+
+
+    void rotateleft(node*& q)
+    {
+
+        node* p = q->right;
+        int A_num=num_child(q->left);
+        int B_num=num_child(p->left);
+        int C_num=num_child(p->right);
+        int p_num_childs=num_child(p);
+        int q_num_childs=num_child(q);
+
+
+        q->right = p->left;
+        p->left=q;
+        fixheight(q);
+        fixheight(p);
+        q=p;
+
+        q->num_of_childs=q_num_childs;
+        if(q->left!= nullptr) q->left->num_of_childs=p_num_childs-1;
+        if(q->right!= nullptr) q->right->num_of_childs=C_num;
+        if (q->left->left!= nullptr)    q->left->left->num_of_childs=A_num;
+        if (q->left->right!= nullptr)     q->left->right->num_of_childs=B_num;
 
 
     }
 
+    node* findmin(node* p) // поиск узла с минимальным ключом в дереве p
+    {
+        return p->left?findmin(p->left):p;
+    }
+
+    node* removemin(node* p) // удаление узла с минимальным ключом из дерева p
+    {
+        if( p->left==0 )
+            return p->right;
+        p->left = removemin(p->left);
+        balance(p);
+        return p;
+    }
+
+    node* remove(node* p, int k) // удаление ключа k из дерева p
+    {
+        if( !p ) return 0;
+        if( k < p->key ) {
+            p->num_of_childs--;
+            p->left = remove(p->left, k);
+        }
+        else if( k > p->key ) {
+            p->num_of_childs--;
+            p->right = remove(p->right, k);
+        }
+        else //  k == p->key
+        {
+            node* q = p->left;
+            node* r = p->right;
+            delete p;
+            if( !r ) return q;
+            node* min=findmin(r);
+            if (min->left!= nullptr && min->right!= nullptr && min->left->height>min->right->height) {
+                min->left = removemin(r);
+                min->right = q;
+            }
+            else{
+                min->right = removemin(r);
+                min->left = q;
+            }
+            balance(min);
+            return min;
+        }
+        balance(p);
+        return p;
+    }
+
+
     node* data= nullptr;
+
+public:
+
+
 
     Tree(Cmp m_cmp){
         cmp=m_cmp;
@@ -121,6 +201,10 @@ public:
 
     void print(){
         req_print(data);
+    }
+
+    void del(const T& k){
+        data=remove(data,k);
     }
 
 
@@ -142,16 +226,18 @@ public:
 int main(){
     Comparator cmp;
     Tree<int,Comparator> tr(cmp);
-    tr.add(7);
-    tr.add(4);
-    tr.add(8);
-    tr.add(3);
-    tr.add(5);
-    tr.add(6);
+
+    for(int i=0;i<7;i++){
+        tr.add(i);
+    }
+    for (int i=0;i<4;i++) {
+        tr.del(i+3);
+        tr.print();
+        std::cout << std::endl;
+    }
 
 
-
-    tr.print();
+    //tr.print();
 
 
 
