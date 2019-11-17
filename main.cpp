@@ -156,6 +156,7 @@ private:
         {
             node *q = p->left;
             node *r = p->right;
+            int num_childs=p->num_of_childs;
             delete p;
             if (!r) return q;
             node *min;
@@ -164,9 +165,11 @@ private:
             if (min->left != nullptr && min->right != nullptr && min->left->height > min->right->height) {
                 min->left = test;
                 min->right = q;
+                min->num_of_childs=num_childs-1;
             } else {
                 min->right = test;
                 min->left = q;
+                min->num_of_childs=num_childs-1;
             }
             balance(min);
             return min;
@@ -197,6 +200,19 @@ public:
         data = remove(data, k);
     }
 
+    T findkstat(int kstat){
+        node* temp_data=data;
+        int temp_stat=data->num_of_childs-1;
+        while(temp_stat!=kstat) {
+            if (kstat > temp_data->left->num_of_childs) {
+                temp_data = temp_data->right;
+                temp_stat = -temp_data->num_of_childs + kstat+1;
+
+            }
+        }
+        return temp_data->key;
+    }
+
 
 };
 
@@ -212,17 +228,19 @@ public:
 int main() {
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
-
-    for (int i = 0; i < 7; i++) {
+    for (int i=0;i<7;i++) {
         tr.add(i);
+
     }
-    tr.print();
-    std::cout << std::endl;
-    for (int i = 0; i <= 4; i++) {
-        tr.del(i + 2);
-        std::cout << std::endl;
+    for (int i=0;i<5;i++) {
+        tr.del(i+2);
         tr.print();
+
     }
+
+
+    tr.print();
+
 
 
 
