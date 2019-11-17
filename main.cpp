@@ -11,7 +11,7 @@ private:
         int height = 1;
         int num_of_childs = 0;
 
-        node(T data) {
+        explicit node(T data) {
             key = data;
         }
 
@@ -27,6 +27,7 @@ private:
     }
 
     void fixheight(node *&p) {
+
         int hl = height(p->left);
         int hr = height(p->right);
         p->height = (hl > hr ? hl : hr) + 1;
@@ -139,13 +140,15 @@ private:
         if (p->left == 0)
             return p->right;
         p->left = removemin(p->left, temp_data);
+
+        p->num_of_childs--;
         balance(p);
         return p;
     }
 
     node *remove(node *p, int k) // удаление ключа k из дерева p
     {
-        if (!p) return 0;
+
         if (k < p->key) {
             p->num_of_childs--;
             p->left = remove(p->left, k);
@@ -154,25 +157,32 @@ private:
             p->right = remove(p->right, k);
         } else //  k == p->key
         {
-            node *q = p->left;
+            node *l = p->left;
             node *r = p->right;
             int num_childs=p->num_of_childs;
-            delete p;
-            if (!r) return q;
             node *min;
-            node *test = removemin(r, min);
-
-            if (min->left != nullptr && min->right != nullptr && min->left->height > min->right->height) {
-                min->left = test;
-                min->right = q;
-                min->num_of_childs=num_childs-1;
-            } else {
+            node *test;
+            //delete p;
+            if (l!= nullptr && r!= nullptr && r->height<l->height){
+                test = removemin(r, min);
                 min->right = test;
-                min->left = q;
+                min->left = l;
                 min->num_of_childs=num_childs-1;
+                balance(min);
+                return min;
             }
-            balance(min);
-            return min;
+            else{
+
+                if (!r) return l;
+                if (!l) return r;
+                test=removemin(l,min);
+                test->left = min;
+                test->right = r;
+                test->num_of_childs=num_childs-1;
+                balance(test);
+                return test;
+            }
+
         }
         balance(p);
         return p;
@@ -184,7 +194,7 @@ private:
 public:
 
 
-    Tree(Cmp m_cmp) {
+    explicit Tree(Cmp m_cmp) {
         cmp = m_cmp;
     }
 
@@ -202,13 +212,30 @@ public:
 
     T findkstat(int kstat){
         node* temp_data=data;
-        int temp_stat=data->num_of_childs-1;
+        int temp_stat=temp_data->left->num_of_childs+2;
         while(temp_stat!=kstat) {
-            if (kstat > temp_data->left->num_of_childs) {
+
+            if (kstat==temp_stat){
+                return temp_data->key;
+            }
+
+            if (kstat > temp_stat) {
                 temp_data = temp_data->right;
-                temp_stat = -temp_data->num_of_childs + kstat+1;
+                temp_stat+=temp_data->left->num_of_childs+1;
+
+                continue;
+            }
+            if (kstat<temp_stat){
+                temp_data=temp_data->left;
+                if (temp_data->right!= nullptr) {
+                    temp_stat -= temp_data->right->num_of_childs+1;
+                }
+                else{
+                    return temp_data->key;
+                }
 
             }
+
         }
         return temp_data->key;
     }
@@ -228,18 +255,11 @@ public:
 int main() {
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
-    for (int i=0;i<7;i++) {
-        tr.add(i);
-
-    }
     for (int i=0;i<5;i++) {
-        tr.del(i+2);
-        tr.print();
+        tr.add(i+1);
 
     }
-
-
-    tr.print();
+    std::cout << tr.findkstat(4);
 
 
 
