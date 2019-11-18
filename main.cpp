@@ -211,33 +211,24 @@ public:
     }
 
     T findkstat(int kstat){
-        node* temp_data=data;
-        int temp_stat=temp_data->left->num_of_childs+2;
-        while(temp_stat!=kstat) {
-
-            if (kstat==temp_stat){
-                return temp_data->key;
-            }
-
-            if (kstat > temp_stat) {
-                temp_data = temp_data->right;
-                temp_stat+=temp_data->left->num_of_childs+1;
-
-                continue;
-            }
-            if (kstat<temp_stat){
-                temp_data=temp_data->left;
-                if (temp_data->right!= nullptr) {
-                    temp_stat -= temp_data->right->num_of_childs+1;
+        node* cur = data;
+        while (cur != nullptr)
+        {
+            if (cur->left== nullptr) {
+                if (cur->right!=nullptr && kstat!= 0){
+                    return cur->right->key;
                 }
-                else{
-                    return temp_data->key;
-                }
-
+                return cur->key;
             }
+            int sizeLeft = cur->left->num_of_childs+1;
+            if (sizeLeft==0) sizeLeft=1;
+            if (sizeLeft == kstat)
+                return cur->key;
 
+            cur = sizeLeft > kstat ? cur->left: cur->right;
+            if (sizeLeft < kstat)
+                kstat -= sizeLeft + 1;
         }
-        return temp_data->key;
     }
 
 
@@ -252,19 +243,30 @@ public:
 
 };
 
+
+void test(){
+
+    for (int j=1;j<1000;j++) {
+        Comparator cmp;
+        Tree<int, Comparator> tr(cmp);
+        for (int i = 0; i < j; i++) {
+            tr.add(i + 1);
+        }
+        for (int i = 0; i < j; i++) {
+            assert(tr.findkstat(i) == i + 1);
+        }
+    }
+
+}
+
 int main() {
+
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
-    for (int i=0;i<5;i++) {
-        tr.add(i+1);
-
-    }
-    std::cout << tr.findkstat(4);
-
-
-
-
-    //tr.print();
+    tr.add(100);
+    std::cout<< tr.findkstat(100);
+    tr.add(200);
+    std::cout<< tr.findkstat(200);
 
 
 
