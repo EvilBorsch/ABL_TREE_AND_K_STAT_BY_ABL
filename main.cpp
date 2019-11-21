@@ -262,17 +262,34 @@ public:
 
 
 void test() {
+
+    {
+            Comparator cmp;
+            Tree<int, Comparator> tr(cmp);
+            for (int i = 0; i < 5; i++) {
+                tr.add(i + 1);
+            }
+
+            tr.del(1);
+            for (int i = 1; i < 5; i++) {
+                std::cout<< tr.findkstat(i+1) << std::endl;
+                //assert(tr.findkstat(i + 1) == i);
+            }
+
+    }
+
+
     //int j=5;
     for (int j = 2; j < 100; j++) {
         Comparator cmp;
         Tree<int, Comparator> tr(cmp);
         for (int i = 0; i < j; i++) {
-            tr.add(i + 1);
+            tr.add(i);
         }
 
-        tr.del(1);
+        tr.del(0);
         for (int i = 1; i < j; i++) {
-            std::cout<< tr.findkstat(i+1) << std::endl;
+            std::cout<< tr.findkstat(i) << std::endl;
             //assert(tr.findkstat(i + 1) == i);
         }
         std::cout<< "///////////tr: ///////" << j << std::endl;
