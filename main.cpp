@@ -1,5 +1,8 @@
 #include <iostream>
 
+
+using namespace std;
+
 template<class T, class Cmp>
 class Tree {
 private:
@@ -159,26 +162,25 @@ private:
         {
             node *l = p->left;
             node *r = p->right;
-            int num_childs=p->num_of_childs;
+            int num_childs = p->num_of_childs;
             node *min;
             node *test;
             //delete p;
-            if (l!= nullptr && r!= nullptr && r->height<l->height){
+            if (l != nullptr && r != nullptr && r->height < l->height) {
                 test = removemin(r, min);
                 min->right = test;
                 min->left = l;
-                min->num_of_childs=num_childs-1;
+                min->num_of_childs = num_childs - 1;
                 balance(min);
                 return min;
-            }
-            else{
+            } else {
 
                 if (!r) return l;
                 if (!l) return r;
-                test=removemin(l,min);
+                test = removemin(l, min);
                 test->left = min;
                 test->right = r;
-                test->num_of_childs=num_childs-1;
+                test->num_of_childs = num_childs - 1;
                 balance(test);
                 return test;
             }
@@ -210,25 +212,40 @@ public:
         data = remove(data, k);
     }
 
-    T findkstat(int kstat){
-        node* cur = data;
-        while (cur != nullptr)
-        {
-            if (cur->left== nullptr) {
-                if (cur->right!=nullptr && kstat!= 0){
-                    return cur->right->key;
-                }
-                return cur->key;
-            }
-            int sizeLeft = cur->left->num_of_childs+1;
-            if (sizeLeft==0) sizeLeft=1;
-            if (sizeLeft == kstat)
-                return cur->key;
+    T findkstat(int key) {
+        node *cur = data;
+        int kstat;
+        int lol=cur->num_of_childs;
+        if (cur->left == nullptr) kstat = 0;
+        else kstat = cur->left->num_of_childs + 1;
+        int delta;
+        while (key != cur->key) {
 
-            cur = sizeLeft > kstat ? cur->left: cur->right;
-            if (sizeLeft < kstat)
-                kstat -= sizeLeft + 1;
+            if (key > cur->key) {
+                if (cur->right->left == nullptr) {
+                    kstat++;
+                } else kstat += cur->right->left->num_of_childs + 2;
+                cur = cur->right;
+            }
+
+            if (key < cur->key) {
+                cur = cur->left;
+                if (cur == nullptr) kstat--;
+                else {
+                    if (cur->right == nullptr) {
+                        kstat--;
+                    }
+                    else kstat -= (cur->num_of_childs - cur->right->num_of_childs);
+                }
+
+            }
+            if (cur == nullptr) {
+                return kstat;
+            }
+
+
         }
+        return kstat;
     }
 
 
@@ -244,30 +261,50 @@ public:
 };
 
 
-void test(){
-
-    for (int j=1;j<1000;j++) {
+void test() {
+    //int j=5;
+    for (int j = 2; j < 100; j++) {
         Comparator cmp;
         Tree<int, Comparator> tr(cmp);
         for (int i = 0; i < j; i++) {
             tr.add(i + 1);
         }
-        for (int i = 0; i < j; i++) {
-            assert(tr.findkstat(i) == i + 1);
+
+        tr.del(1);
+        for (int i = 1; i < j; i++) {
+            std::cout<< tr.findkstat(i+1) << std::endl;
+            //assert(tr.findkstat(i + 1) == i);
         }
+        std::cout<< "///////////tr: ///////" << j << std::endl;
     }
+
 
 }
 
 int main() {
 
+
+    test();
+    /*
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
-    tr.add(100);
-    std::cout<< tr.findkstat(100);
-    tr.add(200);
-    std::cout<< tr.findkstat(200);
+    int operation;
+    int dig;
+    int N;
+    std::cin >> N;
+    for (int i = 0; i < N; i++) {
+        std::cin >> operation;
+        std::cin >> dig;
+        if (operation == 1) {
+            tr.add(dig);
+            cout << tr.findkstat(dig);
+        } else if (operation == 2) {
+            tr.del(dig);
+            cout << tr.findkstat(dig);
+        } else break;
 
-
-
+    }
+     */
 }
+
+
