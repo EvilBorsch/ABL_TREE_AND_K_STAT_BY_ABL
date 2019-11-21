@@ -217,11 +217,12 @@ public:
         int kstat;
         int lol=cur->num_of_childs;
         if (cur->left == nullptr) kstat = 0;
-        else kstat = cur->left->num_of_childs + 1;
-        int delta;
+        else kstat = cur->left->num_of_childs+1;
+        int delta=0;
         while (key != cur->key) {
 
             if (key > cur->key) {
+                delta=kstat+1;
                 if (cur->right->left == nullptr) {
                     kstat++;
                 } else kstat += cur->right->left->num_of_childs + 2;
@@ -229,19 +230,14 @@ public:
             }
 
             if (key < cur->key) {
-                cur = cur->left;
-                if (cur == nullptr) kstat--;
+                cur=cur->left;
+                if (cur->left== nullptr && cur->right!= nullptr) kstat-=2;
+                else if (cur->left== nullptr && cur->right== nullptr) kstat-=1;
                 else {
-                    if (cur->right == nullptr) {
-                        kstat--;
-                    }
-                    else kstat -= (cur->num_of_childs - cur->right->num_of_childs);
+                    kstat = cur->left->num_of_childs + delta+1;
                 }
+            }
 
-            }
-            if (cur == nullptr) {
-                return kstat;
-            }
 
 
         }
@@ -264,15 +260,17 @@ public:
 void test() {
 
     {
+            int deleted=0;
             Comparator cmp;
             Tree<int, Comparator> tr(cmp);
-            for (int i = 0; i < 5; i++) {
-                tr.add(i + 1);
+            for (int i = 0; i < 21; i++) {
+                tr.add(i);
             }
 
-            tr.del(1);
-            for (int i = 1; i < 5; i++) {
-                std::cout<< tr.findkstat(i+1) << std::endl;
+            tr.del(deleted);
+            for (int i = 0; i < 21; i++) {
+                if (i!=deleted)
+                std::cout<< tr.findkstat(i) << std::endl;
                 //assert(tr.findkstat(i + 1) == i);
             }
 
