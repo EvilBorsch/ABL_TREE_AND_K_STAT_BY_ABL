@@ -166,7 +166,7 @@ private:
             node *min;
             node *test;
             //delete p;
-            if (l != nullptr && r != nullptr && r->height < l->height) {
+            if (l != nullptr && r != nullptr && r->height <= l->height) {
                 test = removemin(r, min);
                 min->right = test;
                 min->left = l;
@@ -174,7 +174,6 @@ private:
                 balance(min);
                 return min;
             } else {
-
                 if (!r) return l;
                 if (!l) return r;
                 test = removemin(l, min);
@@ -215,14 +214,14 @@ public:
     T findkstat(int key) {
         node *cur = data;
         int kstat;
-        int lol=cur->num_of_childs;
+        int lol = cur->num_of_childs;
         if (cur->left == nullptr) kstat = 0;
-        else kstat = cur->left->num_of_childs+1;
-        int delta=0;
+        else kstat = cur->left->num_of_childs + 1;
+        int delta = 0;
         while (key != cur->key) {
 
             if (key > cur->key) {
-                delta=kstat+1;
+                delta = kstat + 1;
                 if (cur->right->left == nullptr) {
                     kstat++;
                 } else kstat += cur->right->left->num_of_childs + 2;
@@ -230,14 +229,13 @@ public:
             }
 
             if (key < cur->key) {
-                cur=cur->left;
-                if (cur->left== nullptr && cur->right!= nullptr) kstat-=2;
-                else if (cur->left== nullptr && cur->right== nullptr) kstat-=1;
+                cur = cur->left;
+                if (cur->left == nullptr && cur->right != nullptr) kstat -= 2;
+                else if (cur->left == nullptr && cur->right == nullptr) kstat -= 1;
                 else {
-                    kstat = cur->left->num_of_childs + delta+1;
+                    kstat = cur->left->num_of_childs + delta + 1;
                 }
             }
-
 
 
         }
@@ -260,7 +258,8 @@ public:
 void test() {
 
     {
-            int deleted=0;
+        for (int j = 0; j < 20; j++) {
+            int deleted = j;
             Comparator cmp;
             Tree<int, Comparator> tr(cmp);
             for (int i = 0; i < 21; i++) {
@@ -269,10 +268,17 @@ void test() {
 
             tr.del(deleted);
             for (int i = 0; i < 21; i++) {
-                if (i!=deleted)
-                std::cout<< tr.findkstat(i) << std::endl;
-                //assert(tr.findkstat(i + 1) == i);
+
+                if (i < deleted) {
+                    assert(tr.findkstat(i) == i);
+                }
+                if (i > deleted) {
+                    assert(tr.findkstat(i) == i - 1);
+                }
+
             }
+            std::cout<< j <<std::endl;
+        }
 
     }
 
@@ -287,10 +293,10 @@ void test() {
 
         tr.del(0);
         for (int i = 1; i < j; i++) {
-            std::cout<< tr.findkstat(i) << std::endl;
+            std::cout << tr.findkstat(i) << std::endl;
             //assert(tr.findkstat(i + 1) == i);
         }
-        std::cout<< "///////////tr: ///////" << j << std::endl;
+        std::cout << "///////////tr: ///////" << j << std::endl;
     }
 
 
