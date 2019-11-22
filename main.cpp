@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <sstream>
+#include <cassert>
 
 using namespace std;
 
@@ -75,13 +76,6 @@ private:
         balance(nod);
     }
 
-    void req_print(node *nod) {
-        if (nod == nullptr)
-            return;
-        req_print(nod->left);
-        std::cout << nod->key << " ";
-        req_print(nod->right);
-    }
 
     void rotateright(node *&p) {
 
@@ -90,7 +84,6 @@ private:
         int B_num = num_child(q->right);
         int C_num = num_child(p->right);
         int p_num_childs = num_child(p);
-        int q_num_childs = num_child(q);
 
 
         p->left = q->right;
@@ -100,13 +93,16 @@ private:
 
         p = q;
         p->num_of_childs = p_num_childs;
-        if (p->right != nullptr) {
-            if (q_num_childs == 0) p->right->num_of_childs = 0;
-            else p->right->num_of_childs = q_num_childs - 1;
-        }
         if (p->left != nullptr) p->left->num_of_childs = A_num;
         if (p->right->right != nullptr) p->right->right->num_of_childs = C_num;
         if (p->right->left != nullptr) p->right->left->num_of_childs = B_num;
+
+        if (p->right != nullptr) {
+            p->right->num_of_childs = 0;
+            if (p->right->left != nullptr) p->right->num_of_childs += p->right->left->num_of_childs + 1;
+            if (p->right->right != nullptr) p->right->num_of_childs += p->right->right->num_of_childs + 1;
+        }
+
 
     }
 
@@ -117,7 +113,6 @@ private:
         int A_num = num_child(q->left);
         int B_num = num_child(p->left);
         int C_num = num_child(p->right);
-        int p_num_childs = num_child(p);
         int q_num_childs = num_child(q);
 
 
@@ -127,29 +122,30 @@ private:
         fixheight(p);
         q = p;
 
-        q->num_of_childs = q_num_childs;
-        if (q->left != nullptr) {
-            if (p_num_childs == 0) q->left->num_of_childs = 0;
-            else q->left->num_of_childs = p_num_childs - 1;
-        }
         if (q->right != nullptr) q->right->num_of_childs = C_num;
         if (q->left->left != nullptr) q->left->left->num_of_childs = A_num;
         if (q->left->right != nullptr) q->left->right->num_of_childs = B_num;
+        q->num_of_childs = q_num_childs;
+        if (q->left != nullptr) {
+            q->left->num_of_childs = 0;
+            if (q->left->left != nullptr) q->left->num_of_childs += q->left->left->num_of_childs + 1;
+            if (q->left->right != nullptr) q->left->num_of_childs += q->left->right->num_of_childs + 1;
+
+
+        }
 
 
     }
 
 
-    node *removemin(node *p, node *&temp_data) // удаление узла с минимальным ключом из дерева p
-    {
+    node *removemin(node *p, node *&temp_data) {
         temp_data = p;
         while (temp_data->left != nullptr) {
             temp_data = temp_data->left;
         }
-        if (p->left == 0)
+        if (p->left == nullptr)
             return p->right;
         p->left = removemin(p->left, temp_data);
-
         p->num_of_childs--;
         balance(p);
         return p;
@@ -160,7 +156,7 @@ private:
         while (temp_data->right != nullptr) {
             temp_data = temp_data->right;
         }
-        if (p->right == 0)
+        if (p->right == nullptr)
             return p->left;
         p->right = removemax(p->right, temp_data);
 
@@ -169,9 +165,9 @@ private:
         return p;
     }
 
-    node *remove(node *p, int k) // удаление ключа k из дерева p
-    {
+    node *remove(node *p, int k) {
         int sizeLeft;
+        if (p->left == nullptr && p->right == nullptr) return nullptr;
         if (p->left == nullptr) {
             sizeLeft = 0;
         } else {
@@ -179,14 +175,12 @@ private:
             if (sizeLeft == 0) sizeLeft = 1;
         }
 
-        if (sizeLeft == k) //  k == p->key
-        {
+        if (sizeLeft == k) {
             node *l = p->left;
             node *r = p->right;
             int num_childs = p->num_of_childs;
             node *min;
             node *test;
-            delete p;
             if (l != nullptr && r != nullptr && r->height <= l->height) {
                 test = removemin(r, min);
                 min->right = test;
@@ -232,9 +226,6 @@ public:
         req_add(data, key);
     }
 
-    void print() {
-        req_print(data);
-    }
 
     void del(const T &k) {
         data = remove(data, k);
@@ -243,7 +234,6 @@ public:
     T findkstat(int key) {
         node *cur = data;
         int kstat;
-        int num_child = cur->num_of_childs;
         if (cur->left == nullptr) kstat = 0;
         else kstat = cur->left->num_of_childs + 1;
         int delta = 0;
@@ -277,70 +267,270 @@ public:
 class Comparator {
 public:
     bool operator()(int a, int b) {
-        return a > b;
+        return a < b;
     }
 
 };
 
 
-void test() {
-
-    {
-        for (int j = 0; j < 20; j++) {
-            int deleted = j;
-            Comparator cmp;
-            Tree<int, Comparator> tr(cmp);
-            for (int i = 0; i < 21; i++) {
-                tr.add(i);
-            }
-
-            tr.del(deleted);
-            for (int i = 0; i < 21; i++) {
-                if (i != deleted) {
-                    std::cout << tr.findkstat(i) << " ";
-
-                }
-
-
-            }
-            std::cout << "/////" << j << std::endl;
-
-        }
-
-    }
-
-    {
-        Comparator cmp;
-        Tree<int, Comparator> tr(cmp);
-        tr.add(100);
-        tr.add(200);
-        tr.add(50);
-        tr.del(1);
-        tr.add(150);
-        std::cout << tr.findkstat(150);
-    }
-
-
-}
-
-int main() {
+void run(std::istream &in, std::ostream &out) {
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
     int operation;
     int dig;
     int N;
-    std::cin >> N;
+    in >> N;
     for (int i = 0; i < N; i++) {
-        std::cin >> operation;
-        std::cin >> dig;
+        in >> operation;
+        in >> dig;
         if (operation == 1) {
             tr.add(dig);
-            cout << tr.findkstat(dig) << std::endl;
+            out << tr.findkstat(dig) << std::endl;
         } else if (operation == 2) {
-            tr.del(0);
+            tr.del(dig);
         }
-
     }
+}
+
+
+void test() {
+
+
+    {
+        stringstream ss;
+        ss << "5\n"
+              "1 100\n"
+              "1 200\n"
+              "1 50\n"
+              "2 1\n"
+              "1 150";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "0\n"
+                            "2\n"
+                            "1\n");
+    }
+
+
+    {
+        stringstream ss;
+        ss << "5\n"
+              "1 100\n"
+              "1 50\n"
+              "2 0\n"
+              "1 45\n"
+              "1 200";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "1\n"
+                            "1\n"
+                            "0\n");
+    }
+
+    {
+        stringstream ss;
+        ss << "6\n"
+              "1 100\n"
+              "1 200\n"
+              "1 300\n"
+              "1 400\n"
+              "1 500\n"
+              "1 600\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n");
+    }
+
+    {
+        stringstream ss;
+        ss << "6\n"
+              "1 100\n"
+              "1 90\n"
+              "1 80\n"
+              "1 70\n"
+              "1 60\n"
+              "1 50\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "1\n"
+                            "2\n"
+                            "3\n"
+                            "4\n"
+                            "5\n");
+    }
+
+
+    {
+        stringstream ss;
+        ss << "6\n"
+              "1 100\n"
+              "2 100\n"
+              "1 100\n"
+              "2 100\n"
+              "1 100\n"
+              "2 100\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "0\n"
+                            "0\n"
+        );
+    }
+
+
+    {
+        stringstream ss;
+        ss << "12\n"
+              "1 100\n"
+              "1 200\n"
+              "1 300\n"
+              "1 400\n"
+              "1 500\n"
+              "1 600\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "1 150\n"
+              "1 250\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "1\n"
+                            "0\n"
+        );
+    }
+
+    {
+        stringstream ss;
+        ss << "12\n"
+              "1 600\n"
+              "1 500\n"
+              "1 400\n"
+              "1 300\n"
+              "1 200\n"
+              "1 100\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "1 150\n"
+              "1 250\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "1\n"
+                            "2\n"
+                            "3\n"
+                            "4\n"
+                            "5\n"
+                            "1\n"
+                            "0\n"
+        );
+    }
+
+    {
+        stringstream ss;
+        ss << "12\n"
+              "1 600\n"
+              "1 400\n"
+              "1 500\n"
+              "1 200\n"
+              "1 300\n"
+              "1 100\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "2 0\n"
+              "1 150\n"
+              "1 250\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "1\n"
+                            "1\n"
+                            "3\n"
+                            "3\n"
+                            "5\n"
+                            "1\n"
+                            "0\n"
+        );
+    }
+
+
+    {
+        stringstream ss;
+        ss << "12\n"
+              "1 600\n"
+              "1 400\n"
+              "1 500\n"
+              "2 1\n"
+              "2 0\n"
+              "2 0\n"
+              "1 400\n"
+              "1 500\n"
+              "1 600\n"
+              "2 1\n"
+              "1 800\n"
+              "1 10\n";
+        stringstream out;
+        run(ss, out);
+        assert(out.str() == "0\n"
+                            "1\n"
+                            "1\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "0\n"
+                            "3\n"
+        );
+    }
+
+    {
+        stringstream ss;
+        ss << "15\n"
+              "1 41\n"
+              "1 18467\n"
+              "2 0\n"
+              "1 26500\n"
+              "1 19169\n"
+              "2 1\n"
+              "1 11478\n"
+              "1 29358\n"
+              "2 2\n"
+              "1 24464\n"
+              "1 5705\n"
+              "2 0\n"
+              "1 23281\n"
+              "1 16827\n"
+              "2 1\n";
+        stringstream out;
+        run(ss, out);
+        std::cout << out.str();
+        //assert(out.str()=="0 0 0 1 1 0 2 3 2 3 ");
+    }
+
+
+}
+
+
+int main() {
+    //test();
+    run(std::cin, std::cout);
+
 
 }
 
