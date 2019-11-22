@@ -100,7 +100,10 @@ private:
 
         p = q;
         p->num_of_childs = p_num_childs;
-        if (p->right != nullptr) p->right->num_of_childs = q_num_childs - 1;
+        if (p->right != nullptr) {
+            if (q_num_childs == 0) p->right->num_of_childs = 0;
+            else p->right->num_of_childs = q_num_childs - 1;
+        }
         if (p->left != nullptr) p->left->num_of_childs = A_num;
         if (p->right->right != nullptr) p->right->right->num_of_childs = C_num;
         if (p->right->left != nullptr) p->right->left->num_of_childs = B_num;
@@ -125,7 +128,10 @@ private:
         q = p;
 
         q->num_of_childs = q_num_childs;
-        if (q->left != nullptr) q->left->num_of_childs = p_num_childs - 1;
+        if (q->left != nullptr) {
+            if (p_num_childs == 0) q->left->num_of_childs = 0;
+            else q->left->num_of_childs = p_num_childs - 1;
+        }
         if (q->right != nullptr) q->right->num_of_childs = C_num;
         if (q->left->left != nullptr) q->left->left->num_of_childs = A_num;
         if (q->left->right != nullptr) q->left->right->num_of_childs = B_num;
@@ -149,7 +155,7 @@ private:
         return p;
     }
 
-    node* removemax(node* p,node*& temp_data){
+    node *removemax(node *p, node *&temp_data) {
         temp_data = p;
         while (temp_data->right != nullptr) {
             temp_data = temp_data->right;
@@ -165,8 +171,15 @@ private:
 
     node *remove(node *p, int k) // удаление ключа k из дерева p
     {
+        int sizeLeft;
+        if (p->left == nullptr) {
+            sizeLeft = 0;
+        } else {
+            sizeLeft = p->left->num_of_childs + 1;
+            if (sizeLeft == 0) sizeLeft = 1;
+        }
 
-        if(k==p->key) //  k == p->key
+        if (sizeLeft == k) //  k == p->key
         {
             node *l = p->left;
             node *r = p->right;
@@ -193,13 +206,12 @@ private:
             }
 
         }
-        if (cmp(k,p->key)){
-            p->num_of_childs--;
-            p->right = remove(p->right, k);
-        }
-        else {
+        if (sizeLeft > k) {
             p->num_of_childs--;
             p->left = remove(p->left, k);
+        } else {
+            p->num_of_childs--;
+            p->right = remove(p->right, k - sizeLeft - 1);
         }
 
         balance(p);
@@ -237,17 +249,14 @@ public:
         int delta = 0;
         while (key != cur->key) {
 
-            if (cmp(key,cur->key)) {
+            if (cmp(key, cur->key)) {
                 delta = kstat + 1;
                 if (cur->right->left == nullptr) {
                     kstat++;
                 } else kstat += cur->right->left->num_of_childs + 2;
                 cur = cur->right;
                 continue;
-            }
-
-
-            else {
+            } else {
                 cur = cur->left;
                 if (cur->left == nullptr && cur->right != nullptr) kstat -= 2;
                 else if (cur->left == nullptr && cur->right == nullptr) kstat -= 1;
@@ -268,7 +277,7 @@ public:
 class Comparator {
 public:
     bool operator()(int a, int b) {
-        return a < b;
+        return a > b;
     }
 
 };
@@ -287,15 +296,14 @@ void test() {
 
             tr.del(deleted);
             for (int i = 0; i < 21; i++) {
-                if (i!=deleted){
-                    std::cout<< tr.findkstat(i) << " ";
+                if (i != deleted) {
+                    std::cout << tr.findkstat(i) << " ";
 
                 }
 
 
-
             }
-            std::cout<< "/////" << j << std::endl;
+            std::cout << "/////" << j << std::endl;
 
         }
 
@@ -307,22 +315,15 @@ void test() {
         tr.add(100);
         tr.add(200);
         tr.add(50);
-        tr.del(100);
+        tr.del(1);
         tr.add(150);
-        tr.findkstat(150);
+        std::cout << tr.findkstat(150);
     }
-
-
-
-
 
 
 }
 
 int main() {
-
-    test();
-
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
     int operation;
@@ -334,11 +335,10 @@ int main() {
         std::cin >> dig;
         if (operation == 1) {
             tr.add(dig);
-            cout << tr.findkstat(dig);
+            cout << tr.findkstat(dig) << std::endl;
         } else if (operation == 2) {
-            tr.del(dig);
-            cout << tr.findkstat(dig);
-        } else break;
+            tr.del(0);
+        }
 
     }
 
