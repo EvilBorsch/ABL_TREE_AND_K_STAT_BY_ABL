@@ -166,13 +166,7 @@ private:
     node *remove(node *p, int k) // удаление ключа k из дерева p
     {
 
-        if (k < p->key) {
-            p->num_of_childs--;
-            p->left = remove(p->left, k);
-        } else if (k > p->key) {
-            p->num_of_childs--;
-            p->right = remove(p->right, k);
-        } else //  k == p->key
+        if(k==p->key) //  k == p->key
         {
             node *l = p->left;
             node *r = p->right;
@@ -199,6 +193,15 @@ private:
             }
 
         }
+        if (cmp(k,p->key)){
+            p->num_of_childs--;
+            p->right = remove(p->right, k);
+        }
+        else {
+            p->num_of_childs--;
+            p->left = remove(p->left, k);
+        }
+
         balance(p);
         return p;
     }
@@ -234,15 +237,17 @@ public:
         int delta = 0;
         while (key != cur->key) {
 
-            if (key > cur->key) {
+            if (cmp(key,cur->key)) {
                 delta = kstat + 1;
                 if (cur->right->left == nullptr) {
                     kstat++;
                 } else kstat += cur->right->left->num_of_childs + 2;
                 cur = cur->right;
+                continue;
             }
 
-            if (key < cur->key) {
+
+            else {
                 cur = cur->left;
                 if (cur->left == nullptr && cur->right != nullptr) kstat -= 2;
                 else if (cur->left == nullptr && cur->right == nullptr) kstat -= 1;
@@ -253,7 +258,7 @@ public:
 
 
         }
-        return num_child - kstat;
+        return kstat;
     }
 
 
@@ -263,7 +268,7 @@ public:
 class Comparator {
 public:
     bool operator()(int a, int b) {
-        return a > b;
+        return a < b;
     }
 
 };
@@ -272,7 +277,7 @@ public:
 void test() {
 
     {
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < 20; j++) {
             int deleted = j;
             Comparator cmp;
             Tree<int, Comparator> tr(cmp);
@@ -284,37 +289,39 @@ void test() {
             for (int i = 0; i < 21; i++) {
                 if (i!=deleted){
                     std::cout<< tr.findkstat(i) << " ";
+
                 }
 
 
+
             }
-            std::cout<< "//////////" << j <<std::endl;
+            std::cout<< "/////" << j << std::endl;
+
         }
 
     }
 
-
-    //int j=5;
-    for (int j = 2; j < 100; j++) {
+    {
         Comparator cmp;
         Tree<int, Comparator> tr(cmp);
-        for (int i = 0; i < j; i++) {
-            tr.add(i);
-        }
-
-        tr.del(0);
-        for (int i = 1; i < j; i++) {
-            //std::cout << tr.findkstat(i) << std::endl;
-            assert(tr.findkstat(i) == i-1);
-        }
+        tr.add(100);
+        tr.add(200);
+        tr.add(50);
+        tr.del(100);
+        tr.add(150);
+        tr.findkstat(150);
     }
+
+
+
+
 
 
 }
 
 int main() {
 
-
+    test();
 
     Comparator cmp;
     Tree<int, Comparator> tr(cmp);
