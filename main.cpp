@@ -32,7 +32,6 @@ private:
     }
 
     void fixheight(node *&p) {
-
         int hl = height(p->left);
         int hr = height(p->right);
         p->height = (hl > hr ? hl : hr) + 1;
@@ -141,9 +140,7 @@ private:
 
     node *removemin(node *p, node *&temp_data) {
         temp_data = p;
-        while (temp_data->left != nullptr) {
-            temp_data = temp_data->left;
-        }
+
         if (p->left == nullptr)
             return p->right;
         p->left = removemin(p->left, temp_data);
@@ -154,9 +151,7 @@ private:
 
     node *removemax(node *p, node *&temp_data) {
         temp_data = p;
-        while (temp_data->right != nullptr) {
-            temp_data = temp_data->right;
-        }
+
         if (p->right == nullptr)
             return p->left;
         p->right = removemax(p->right, temp_data);
@@ -261,28 +256,11 @@ public:
         return kstat;
     }
 
-    ~Tree() {
-        std::queue<node *> q;
-        q.push(data->left);
-        q.push(data->right);
-        while (!q.empty()) {
-            node *temp = q.front();
-            if (temp != nullptr) {
-                if (temp->left != nullptr) q.push(temp->left);
-                if (temp->right != nullptr) q.push(temp->right);
-            }
-            delete temp;
-            q.pop();
-        }
 
-        delete data;
-    }
 
     Tree(const Tree &) = delete;
 
     Tree &operator=(const Tree &) = delete;
-
-
 
 
 };
@@ -317,7 +295,7 @@ void run(std::istream &in, std::ostream &out) {
 }
 
 
-void temp() {
+void test() {
 
 
     {
@@ -529,7 +507,6 @@ void temp() {
 int main() {
     //test();
     run(std::cin, std::cout);
-
 
 }
 
