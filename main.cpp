@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <queue>
 
 using namespace std;
 
@@ -165,7 +166,7 @@ private:
         return p;
     }
 
-    node *remove(node *p, int k) {
+    node *remove(node *p, const int &k) {
         int sizeLeft;
         if (p->left == nullptr && p->right == nullptr) return nullptr;
         if (p->left == nullptr) {
@@ -180,10 +181,10 @@ private:
             node *r = p->right;
             int num_childs = p->num_of_childs;
             node *min;
-            node *test;
+            node *temp;
             if (l != nullptr && r != nullptr && r->height <= l->height) {
-                test = removemin(r, min);
-                min->right = test;
+                temp = removemin(r, min);
+                min->right = temp;
                 min->left = l;
                 min->num_of_childs = num_childs - 1;
                 balance(min);
@@ -191,8 +192,8 @@ private:
             } else {
                 if (!r) return l;
                 if (!l) return r;
-                test = removemax(l, min);
-                min->left = test;
+                temp = removemax(l, min);
+                min->left = temp;
                 min->right = r;
                 min->num_of_childs = num_childs - 1;
                 balance(min);
@@ -231,7 +232,7 @@ public:
         data = remove(data, k);
     }
 
-    T findkstat(int key) {
+    T findkstat(const int &key) {
         node *cur = data;
         int kstat;
         if (cur->left == nullptr) kstat = 0;
@@ -259,6 +260,29 @@ public:
         }
         return kstat;
     }
+
+    ~Tree() {
+        std::queue<node *> q;
+        q.push(data->left);
+        q.push(data->right);
+        while (!q.empty()) {
+            node *temp = q.front();
+            if (temp != nullptr) {
+                if (temp->left != nullptr) q.push(temp->left);
+                if (temp->right != nullptr) q.push(temp->right);
+            }
+            delete temp;
+            q.pop();
+        }
+
+        delete data;
+    }
+
+    Tree(const Tree &) = delete;
+
+    Tree &operator=(const Tree &) = delete;
+
+
 
 
 };
@@ -293,7 +317,7 @@ void run(std::istream &in, std::ostream &out) {
 }
 
 
-void test() {
+void temp() {
 
 
     {
@@ -498,31 +522,6 @@ void test() {
                             "3\n"
         );
     }
-
-    {
-        stringstream ss;
-        ss << "15\n"
-              "1 41\n"
-              "1 18467\n"
-              "2 0\n"
-              "1 26500\n"
-              "1 19169\n"
-              "2 1\n"
-              "1 11478\n"
-              "1 29358\n"
-              "2 2\n"
-              "1 24464\n"
-              "1 5705\n"
-              "2 0\n"
-              "1 23281\n"
-              "1 16827\n"
-              "2 1\n";
-        stringstream out;
-        run(ss, out);
-        std::cout << out.str();
-        //assert(out.str()=="0 0 0 1 1 0 2 3 2 3 ");
-    }
-
 
 }
 
